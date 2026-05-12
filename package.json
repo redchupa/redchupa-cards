@@ -1,0 +1,38 @@
+{
+  "name": "redchupa-cards",
+  "version": "0.1.0",
+  "description": "Lovelace card collection for Korean Home Assistant users (KEPCO / transit / pharmacy / AI alert / family location / floor3d).",
+  "main": "dist/redchupa-cards.js",
+  "type": "module",
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c --watch",
+    "lint": "tsc --noEmit"
+  },
+  "keywords": [
+    "home-assistant",
+    "hacs",
+    "lovelace",
+    "custom-card",
+    "korea",
+    "kepco",
+    "kr_component_kit"
+  ],
+  "author": "redchupa (https://github.com/redchupa)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/redchupa/redchupa-cards"
+  },
+  "dependencies": {
+    "lit": "^3.1.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@rollup/plugin-terser": "^1.0.0",
+    "rollup": "^4.12.0",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  }
+}

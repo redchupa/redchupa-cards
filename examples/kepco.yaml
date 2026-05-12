@@ -1,0 +1,32 @@
+# kepco-progress-card example
+#
+# Replace `your_kepco_progress` with the actual entity_id produced by
+# kr_component_kit's KEPCO integration on your install. The integration
+# typically exposes a numeric kWh-this-cycle sensor — that's what you want.
+#
+# Usage:
+#   1. HACS → Frontend → install "Redchupa Cards"
+#   2. Dashboard → Edit → Add card → Manual
+#   3. Paste the block below
+#
+# NOTE: this file uses placeholder entity_ids only. Do not commit a card
+# config that references your real (personal) entity ids back into this repo.
+
+type: custom:kepco-progress-card
+entity: sensor.your_kepco_progress
+name: 우리집 전력 사용량
+show_estimate: true
+
+# ---------------------------------------------------------------------------
+# Variant: side-by-side comparison (this month vs last month)
+# Requires two sensors. Wrap in a horizontal-stack.
+# ---------------------------------------------------------------------------
+#
+# type: horizontal-stack
+# cards:
+#   - type: custom:kepco-progress-card
+#     entity: sensor.your_kepco_progress
+#     name: 이번달
+#   - type: custom:kepco-progress-card
+#     entity: sensor.your_kepco_last_month
+#     name: 지난달

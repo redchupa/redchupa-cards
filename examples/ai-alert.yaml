@@ -1,0 +1,37 @@
+# ai-alert-timeline-card example
+#
+# Designed for the "latest output" pattern: an automation triggers an AI Task
+# (Gemini, Ollama, etc.), then writes the analysis text to an input_text and
+# the source image URL to one of its attributes. This card collects several
+# such entities and lays them out as a timeline sorted by last_changed desc.
+#
+# Recognized attribute keys (any present is picked up, others ignored):
+#   - snapshot_url | image_url | thumbnail
+#   - event_type   | category   | kind
+#   - confidence   | score      | prob       (0–1 or 0–100, auto-scaled)
+#
+# v1 caveat: this card shows only the *current* state of each entity. True
+# scrollback history (history API fetch) is planned for M2.
+#
+# Replace `your_*` placeholders. Do not commit personal entity_ids.
+
+type: custom:ai-alert-timeline-card
+title: AI 알림
+entities:
+  - input_text.your_baby_sleep_ai_latest
+  - input_text.your_front_door_ai_latest
+  - input_text.your_living_room_ai_latest
+show_thumbnails: true
+show_confidence: true
+max_rows: 10
+
+# ---------------------------------------------------------------------------
+# Variant: text-only timeline (no thumbnails, smaller card)
+# ---------------------------------------------------------------------------
+#
+# type: custom:ai-alert-timeline-card
+# entities:
+#   - input_text.your_ai_alert_1
+#   - input_text.your_ai_alert_2
+# show_thumbnails: false
+# show_confidence: false

@@ -1,0 +1,43 @@
+# transit-card example
+#
+# Consumes `sensor.transit_*` entities from kr_component_kit. The card is
+# attribute-tolerant: it picks up `route` / `route_no` / `bus_no`, plus
+# `direction` / `destination`, plus `second_arrival` / `next_arrival_min`
+# if your sensor exposes them — and quietly skips fields it doesn't see.
+#
+# Replace `your_*` placeholders with the entity_ids that kr_component_kit
+# created for *your* stops. Do not commit a card config that references
+# your real entity_ids back into this repo.
+
+type: custom:transit-card
+title: 출근길 정류장
+entities:
+  - sensor.your_bus_stop_seoul_001
+  - sensor.your_bus_stop_seoul_002
+  - entity: sensor.your_subway_gangnam
+    name: 강남역 2호선
+
+# ---------------------------------------------------------------------------
+# Variant: minimal single-stop (no title override, no rename)
+# ---------------------------------------------------------------------------
+#
+# type: custom:transit-card
+# entities:
+#   - sensor.your_bus_stop_home
+
+# ---------------------------------------------------------------------------
+# Variant: side-by-side commute board (bus + subway)
+# ---------------------------------------------------------------------------
+#
+# type: horizontal-stack
+# cards:
+#   - type: custom:transit-card
+#     title: 버스
+#     entities:
+#       - sensor.your_bus_146
+#       - sensor.your_bus_360
+#   - type: custom:transit-card
+#     title: 지하철
+#     entities:
+#       - sensor.your_subway_line2
+#       - sensor.your_subway_line9

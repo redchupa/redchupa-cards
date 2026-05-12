@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.pnp.*
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test
+coverage/
+
+# Local dev HA config (never commit dev HA URLs)
+ha-dev/
+dev-config/
+
+# Personal screenshots (must be masked before commit)
+images/raw/
+images/unmasked/

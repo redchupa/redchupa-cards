@@ -1,0 +1,41 @@
+# pharmacy-emergency-card example
+#
+# Reads pharmacy list from a sensor's attributes (kr_component_kit Pharmacy
+# integration typically exposes `pharmacies` / `nearby` / `items` lists),
+# and shows the latest state of any number of alert event entities below.
+#
+# The card is attribute-tolerant — per-item keys like `name|dutyName`,
+# `address|dutyAddr`, `phone|dutyTel1`, `distance|distance_km`, `open_now`
+# are all picked up if present, ignored if absent.
+#
+# Replace `your_*` placeholders with your real entity_ids. Don't commit
+# personal entity_ids back into this repo.
+
+type: custom:pharmacy-emergency-card
+title: 야간 약국 & 알림
+pharmacy_entity: sensor.your_pharmacy_nearby
+alert_entities:
+  - event.your_disaster_alert
+  - event.your_safety_alert
+  - event.your_weather_warning
+max_pharmacies: 5
+max_alerts: 3
+
+# ---------------------------------------------------------------------------
+# Variant: pharmacy only (no alerts section)
+# ---------------------------------------------------------------------------
+#
+# type: custom:pharmacy-emergency-card
+# pharmacy_entity: sensor.your_pharmacy_nearby
+# max_pharmacies: 8
+
+# ---------------------------------------------------------------------------
+# Variant: alerts only (skip pharmacy section)
+# ---------------------------------------------------------------------------
+#
+# type: custom:pharmacy-emergency-card
+# title: 안전 알림 모음
+# alert_entities:
+#   - event.your_disaster_alert
+#   - event.your_earthquake
+#   - event.your_weather_warning
