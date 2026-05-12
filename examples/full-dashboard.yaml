@@ -1,0 +1,65 @@
+# full-dashboard.yaml
+#
+# A single-view sample dashboard that exercises all five v1 cards at once.
+# Paste this into a Lovelace view's "Edit raw configuration" to get a
+# working starting point, then swap the `your_*` entity_ids for what
+# kr_component_kit / your automations actually produced on your install.
+#
+# Layout overview:
+#   ┌────────────────────────┬─────────────────────────┐
+#   │ kepco-progress-card    │ transit-card            │
+#   ├────────────────────────┴─────────────────────────┤
+#   │ family-location-card                             │
+#   ├────────────────────────┬─────────────────────────┤
+#   │ pharmacy-emergency     │ ai-alert-timeline       │
+#   └────────────────────────┴─────────────────────────┘
+#
+# This is the "Korean household dashboard" pitch from PLAN.md — one view
+# that covers utilities, commute, family, safety, and AI alerts.
+
+title: 우리집
+views:
+  - title: 우리집
+    icon: mdi:home
+    path: home
+    cards:
+      # Row 1 — utilities + transit ----------------------------------------
+      - type: horizontal-stack
+        cards:
+          - type: custom:kepco-progress-card
+            entity: sensor.your_kepco_progress
+            name: 이번달 전력
+
+          - type: custom:transit-card
+            title: 출근 정류장
+            entities:
+              - sensor.your_bus_stop_1
+              - sensor.your_subway_line
+
+      # Row 2 — family location full width ---------------------------------
+      - type: custom:family-location-card
+        title: 가족 위치
+        entities:
+          - person.your_parent_1
+          - person.your_parent_2
+          - device_tracker.your_vehicle_gps
+
+      # Row 3 — pharmacy + AI alerts ---------------------------------------
+      - type: horizontal-stack
+        cards:
+          - type: custom:pharmacy-emergency-card
+            title: 야간 약국 & 알림
+            pharmacy_entity: sensor.your_pharmacy_nearby
+            alert_entities:
+              - event.your_disaster_alert
+              - event.your_weather_warning
+            max_pharmacies: 3
+            max_alerts: 2
+
+          - type: custom:ai-alert-timeline-card
+            title: AI 알림
+            entities:
+              - input_text.your_front_door_ai_latest
+              - input_text.your_baby_sleep_ai_latest
+            max_rows: 5
+            show_thumbnails: true

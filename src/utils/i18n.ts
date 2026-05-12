@@ -37,6 +37,15 @@ const STRINGS: Dict = {
   'timeline.today': { ko: '오늘', en: 'Today' },
   'timeline.yesterday': { ko: '어제', en: 'Yesterday' },
   'timeline.confidence': { ko: '신뢰도', en: 'Confidence' },
+  'family.title': { ko: '가족 위치', en: 'Family Location' },
+  'family.state.home': { ko: '집', en: 'Home' },
+  'family.state.not_home': { ko: '외출 중', en: 'Away' },
+  'family.state.unknown': { ko: '알 수 없음', en: 'Unknown' },
+  'family.last_seen': { ko: '마지막 확인', en: 'Last seen' },
+  'family.no_entities': {
+    ko: '엔티티가 설정되지 않았습니다',
+    en: 'No entities configured',
+  },
 };
 
 export function pickLang(hassLang: string | undefined): Lang {

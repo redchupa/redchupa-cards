@@ -5,6 +5,7 @@ import './cards/kepco-progress-card';
 import './cards/transit-card';
 import './cards/pharmacy-emergency-card';
 import './cards/ai-alert-timeline-card';
+import './cards/family-location-card';
 
 const VERSION = '0.1.0';
 
@@ -37,6 +38,14 @@ registerCard({
   name: 'AI Alert Timeline Card',
   description:
     'AI 자동화가 채우는 input_text/sensor 엔티티들을 시간순 타임라인으로 표시',
+  preview: true,
+});
+
+registerCard({
+  type: 'family-location-card',
+  name: 'Family Location Card',
+  description:
+    'person · device_tracker · 차량 GPS 통합 위치 카드 (GPS 좌표 비표시)',
   preview: true,
 });
 

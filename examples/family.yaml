@@ -1,0 +1,36 @@
+# family-location-card example
+#
+# Renders person + device_tracker + vehicle GPS as a unified roster, in the
+# order you declare. The card deliberately suppresses raw GPS coordinates —
+# only state (home / zone / away), battery, and last-seen relative time
+# are shown.
+#
+# State translations:
+#   "home"        → 집 / Home (green badge)
+#   "not_home"    → 외출 중 / Away (gray badge)
+#   anything else → treated as zone name (blue badge), shown verbatim
+#
+# Replace `your_*` placeholders with your real entity_ids. Do not commit
+# personal entity_ids back into this repo.
+
+type: custom:family-location-card
+title: 우리 가족 위치
+entities:
+  - person.your_parent_1
+  - person.your_parent_2
+  - entity: device_tracker.your_kid_phone
+    name: 첫째
+  - device_tracker.your_vehicle_gps
+show_battery: true
+show_last_changed: true
+
+# ---------------------------------------------------------------------------
+# Variant: minimalist (no battery, no timestamps)
+# ---------------------------------------------------------------------------
+#
+# type: custom:family-location-card
+# entities:
+#   - person.your_parent_1
+#   - person.your_parent_2
+# show_battery: false
+# show_last_changed: false
