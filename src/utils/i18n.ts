@@ -46,6 +46,27 @@ const STRINGS: Dict = {
     ko: '엔티티가 설정되지 않았습니다',
     en: 'No entities configured',
   },
+  // GUI editor labels
+  'editor.entity': { ko: '엔티티', en: 'Entity' },
+  'editor.entities': { ko: '엔티티 목록', en: 'Entities' },
+  'editor.name': { ko: '카드 제목', en: 'Card title' },
+  'editor.title': { ko: '제목', en: 'Title' },
+  'editor.pharmacy_entity': { ko: '약국 엔티티', en: 'Pharmacy entity' },
+  'editor.alert_entities': {
+    ko: '알림 이벤트 엔티티 목록',
+    en: 'Alert event entities',
+  },
+  'editor.show_estimate': { ko: '예상 요금 표시', en: 'Show estimate' },
+  'editor.show_thumbnails': { ko: '썸네일 표시', en: 'Show thumbnails' },
+  'editor.show_confidence': { ko: '신뢰도 표시', en: 'Show confidence' },
+  'editor.show_battery': { ko: '배터리 표시', en: 'Show battery' },
+  'editor.show_last_changed': {
+    ko: '마지막 변경 시각 표시',
+    en: 'Show last-changed time',
+  },
+  'editor.max_rows': { ko: '최대 표시 수', en: 'Max rows' },
+  'editor.max_pharmacies': { ko: '약국 최대 표시 수', en: 'Max pharmacies' },
+  'editor.max_alerts': { ko: '알림 최대 표시 수', en: 'Max alerts' },
 };
 
 export function pickLang(hassLang: string | undefined): Lang {

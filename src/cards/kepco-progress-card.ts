@@ -47,6 +47,15 @@ export class KepcoProgressCard extends LitElement {
     return 3;
   }
 
+  public static async getConfigElement(): Promise<HTMLElement> {
+    await import('../editors/kepco-progress-editor');
+    return document.createElement('kepco-progress-card-editor');
+  }
+
+  public static getStubConfig(): KepcoProgressCardConfig {
+    return { type: 'custom:kepco-progress-card', entity: '' };
+  }
+
   static styles = css`
     :host {
       display: block;

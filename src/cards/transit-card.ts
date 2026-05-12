@@ -52,6 +52,15 @@ export class TransitCard extends LitElement {
     return Math.max(2, this._config?.entities.length ?? 2);
   }
 
+  public static async getConfigElement(): Promise<HTMLElement> {
+    await import('../editors/transit-editor');
+    return document.createElement('transit-card-editor');
+  }
+
+  public static getStubConfig(): TransitCardConfig {
+    return { type: 'custom:transit-card', entities: [] };
+  }
+
   static styles = css`
     :host {
       display: block;

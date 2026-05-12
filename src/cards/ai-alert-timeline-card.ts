@@ -59,6 +59,15 @@ export class AiAlertTimelineCard extends LitElement {
     return Math.max(3, Math.min(this._config?.entities.length ?? 3, 6));
   }
 
+  public static async getConfigElement(): Promise<HTMLElement> {
+    await import('../editors/ai-alert-timeline-editor');
+    return document.createElement('ai-alert-timeline-card-editor');
+  }
+
+  public static getStubConfig(): AiAlertTimelineCardConfig {
+    return { type: 'custom:ai-alert-timeline-card', entities: [] };
+  }
+
   static styles = css`
     :host {
       display: block;

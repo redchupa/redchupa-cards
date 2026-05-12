@@ -66,6 +66,19 @@ export class PharmacyEmergencyCard extends LitElement {
     return 4;
   }
 
+  public static async getConfigElement(): Promise<HTMLElement> {
+    await import('../editors/pharmacy-emergency-editor');
+    return document.createElement('pharmacy-emergency-card-editor');
+  }
+
+  public static getStubConfig(): PharmacyEmergencyCardConfig {
+    return {
+      type: 'custom:pharmacy-emergency-card',
+      pharmacy_entity: '',
+      alert_entities: [],
+    };
+  }
+
   static styles = css`
     :host {
       display: block;

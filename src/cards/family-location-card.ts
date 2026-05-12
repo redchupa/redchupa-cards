@@ -60,6 +60,15 @@ export class FamilyLocationCard extends LitElement {
     return Math.max(2, this._config?.entities.length ?? 2);
   }
 
+  public static async getConfigElement(): Promise<HTMLElement> {
+    await import('../editors/family-location-editor');
+    return document.createElement('family-location-card-editor');
+  }
+
+  public static getStubConfig(): FamilyLocationCardConfig {
+    return { type: 'custom:family-location-card', entities: [] };
+  }
+
   static styles = css`
     :host {
       display: block;
