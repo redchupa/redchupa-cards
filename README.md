@@ -75,7 +75,9 @@ All rendering is client-side; no outbound network calls outside the HA WebSocket
 
 ## 📦 설치
 
-> ⚠️ v1.0 정식 릴리스 전입니다. 현재는 Custom Repository로만 설치 가능합니다.
+> ⚠️ v1.0 정식 HACS 등록 전입니다. 현재는 **Custom Repository**로 설치할 수 있으며,
+> 배포 산출물(`dist/*.js`)은 git에 커밋되지 않고 **GitHub Releases**에 첨부됩니다.
+> HACS가 자동으로 최신 릴리스 asset을 받아갑니다.
 
 ### HACS Custom Repository
 
@@ -87,14 +89,16 @@ All rendering is client-side; no outbound network calls outside the HA WebSocket
 
 ### 카드 사용
 
-대시보드 편집기에서 **카드 추가 → 수동(Manual)** 으로 다음과 같이 입력:
+대시보드 편집기에서 **카드 추가 → 수동(Manual)** 으로 다음과 같이 입력하거나,
+**Picker → Redchupa Cards** 에서 골라 GUI 에디터로 설정하세요.
 
 ```yaml
 type: custom:kepco-progress-card
 entity: sensor.your_kepco_progress
 ```
 
-자세한 예시는 [`examples/`](examples/) 폴더 참고.
+자세한 예시는 [`examples/`](examples/) 폴더 참고. 5개 카드를 한 화면에서
+시연하는 [`examples/full-dashboard.yaml`](examples/full-dashboard.yaml) 도 제공.
 
 ---
 
@@ -119,11 +123,28 @@ npm run lint
 ### 로컬에서 카드 띄우기
 
 1. `.env.example` 을 `.env.local` 로 복사하고 **개발용 HA** 정보 입력
-2. `dist/redchupa-cards.js` 를 개발 HA의 `config/www/` 에 심볼릭 링크 / 복사
+2. `dist/redchupa-cards.js` (+ 동일 디렉토리의 `redchupa-cards-*.js` chunk들) 을 개발 HA의 `config/www/` 에 심볼릭 링크 / 복사
 3. 대시보드 → Resources 에 `/local/redchupa-cards.js` 등록 (`module` 타입)
 4. `npm run watch` 실행 후 카드 yaml 편집
 
 > ⚠️ 절대 **실사용 HA** 의 토큰이나 URL을 `.env` 에 박지 마세요. 별도 dev 인스턴스 사용을 권장합니다.
+
+### 릴리스 절차 (메인테이너 전용)
+
+`dist/` 는 git에 커밋되지 않습니다. 사용자가 받아가는 산출물은 **GitHub Releases**의 asset입니다 — 태그를 푸시하면 [`.github/workflows/release.yml`](.github/workflows/release.yml) 가 빌드 → 검증 → asset 첨부까지 자동으로 처리합니다.
+
+```bash
+# 1. main 브랜치가 그린 상태인지 확인
+git status
+
+# 2. package.json 버전 bump + commit
+npm version patch     # 또는 minor / major
+
+# 3. 태그 푸시 → release 워크플로우 트리거
+git push origin main --follow-tags
+```
+
+워크플로우가 성공하면 [Releases 페이지](https://github.com/redchupa/redchupa-cards/releases)에서 빌드된 `redchupa-cards.js` + 모든 lazy chunk 파일을 확인할 수 있습니다. HACS는 최신 릴리스에서 이 파일들을 자동으로 받아갑니다.
 
 ---
 

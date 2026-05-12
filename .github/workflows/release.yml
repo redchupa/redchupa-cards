@@ -1,0 +1,79 @@
+name: release
+
+# Fires on annotated tags like v0.1.0, v1.2.3.
+# Build runs in a clean container, then `dist/*.js` (main bundle + every
+# lazy chunk) is attached to the GitHub Release. HACS Custom Repository
+# installs read these assets directly — see README "Installation".
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build & publish dist as GitHub Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (locked)
+        run: npm ci
+
+      - name: Type-check
+        run: npm run lint
+
+      - name: Build bundle
+        run: npm run build
+
+      - name: Verify main bundle size (< 300KB gzip)
+        run: |
+          set -e
+          BUNDLE=dist/redchupa-cards.js
+          test -f "$BUNDLE" || { echo "::error::Bundle not produced"; exit 1; }
+          GZIP_SIZE=$(gzip -c "$BUNDLE" | wc -c)
+          LIMIT=$((300 * 1024))
+          echo "Main entry gzip: $GZIP_SIZE bytes (limit: $LIMIT)"
+          if [ "$GZIP_SIZE" -gt "$LIMIT" ]; then
+            echo "::error::Main bundle exceeds 300KB gzip ($GZIP_SIZE > $LIMIT)"
+            exit 1
+          fi
+
+      - name: Secret leak scan
+        run: |
+          set -e
+          PATTERNS='192\.168\.|10\.0\.|redchupa\.com|ha\.redchupa|jerry|하린|예린|제리|WooRin|AIza[0-9A-Za-z_-]{20,}|sk-[a-zA-Z0-9]{20,}'
+          if grep -rEn --include='*.ts' --include='*.js' --include='*.json' --include='*.yaml' --include='*.yml' --include='*.md' "$PATTERNS" src/ examples/ README.md hacs.json package.json 2>/dev/null; then
+            echo "::error::Potential secret / personal data leak detected"
+            exit 1
+          fi
+
+      - name: Create GitHub Release with dist/*
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -e
+          TAG="${GITHUB_REF_NAME}"
+          # Collect every produced JS file — main entry plus every lazy
+          # chunk that rollup emitted. HACS resolves dynamic imports from
+          # this same directory, so all of them must travel together.
+          ASSETS=(dist/redchupa-cards.js)
+          for f in dist/redchupa-cards-*.js; do
+            [ -e "$f" ] && ASSETS+=("$f")
+          done
+          echo "Attaching ${#ASSETS[@]} asset(s) to release $TAG:"
+          printf '  %s\n' "${ASSETS[@]}"
+          gh release create "$TAG" \
+            --title "redchupa-cards $TAG" \
+            --generate-notes \
+            "${ASSETS[@]}"
