@@ -5,7 +5,7 @@
 
 [![License][license-shield]](LICENSE)
 
-> 🚧 **현재 상태: M0 — Bootstrap**. 카드 구현은 진행 중입니다. 자세한 계획은 [PLAN.md](PLAN.md) 참고.
+> 🌐 English: [README_EN.md](README_EN.md)
 
 [![Open your Home Assistant instance and open a repository inside the HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=redchupa&repository=redchupa-cards&category=plugin)
 
