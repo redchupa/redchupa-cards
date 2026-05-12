@@ -19,6 +19,10 @@ const SCHEMA: FormSchemaItem[] = [
     name: 'max_rows',
     selector: { number: { min: 1, max: 50, mode: 'slider' } },
   },
+  {
+    name: 'history_hours',
+    selector: { number: { min: 0, max: 168, mode: 'slider' } },
+  },
 ];
 
 @customElement('ai-alert-timeline-card-editor')

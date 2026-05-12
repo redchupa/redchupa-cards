@@ -67,6 +67,10 @@ const STRINGS: Dict = {
   'editor.max_rows': { ko: '최대 표시 수', en: 'Max rows' },
   'editor.max_pharmacies': { ko: '약국 최대 표시 수', en: 'Max pharmacies' },
   'editor.max_alerts': { ko: '알림 최대 표시 수', en: 'Max alerts' },
+  'editor.history_hours': {
+    ko: '히스토리 조회 시간 (시간, 0=비활성)',
+    en: 'History window (hours, 0=disable)',
+  },
 };
 
 export function pickLang(hassLang: string | undefined): Lang {

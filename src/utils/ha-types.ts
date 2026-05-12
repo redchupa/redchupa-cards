@@ -29,7 +29,28 @@ export interface HomeAssistant {
     service: string,
     serviceData?: Record<string, unknown>,
   ) => Promise<void>;
+  /** Generic WebSocket call. Used by cards that need history/etc. */
+  callWS: <T = unknown>(msg: Record<string, unknown>) => Promise<T>;
 }
+
+/** Compact history-stream item from `history/history_during_period`. */
+export interface CompactHistoryEntry {
+  s?: string;
+  a?: Record<string, unknown>;
+  lu?: number;
+  lc?: number;
+}
+
+/** Legacy long-form history item — same endpoint, older HA versions. */
+export interface LongHistoryEntry {
+  state?: string;
+  attributes?: Record<string, unknown>;
+  last_updated?: string;
+  last_changed?: string;
+}
+
+export type HistoryEntry = CompactHistoryEntry & LongHistoryEntry;
+export type HistoryResult = Record<string, HistoryEntry[]>;
 
 export interface LovelaceCardConfig {
   type: string;

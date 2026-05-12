@@ -10,8 +10,10 @@
 #   - event_type   | category   | kind
 #   - confidence   | score      | prob       (0–1 or 0–100, auto-scaled)
 #
-# v1 caveat: this card shows only the *current* state of each entity. True
-# scrollback history (history API fetch) is planned for M2.
+# history_hours controls the scrollback window (default 24h). Set to 0 to
+# disable the WS history call and render only the current state of each
+# entity — useful when the entity is updated very frequently and you only
+# want "the latest result per slot".
 #
 # Replace `your_*` placeholders. Do not commit personal entity_ids.
 
@@ -24,6 +26,7 @@ entities:
 show_thumbnails: true
 show_confidence: true
 max_rows: 10
+history_hours: 24
 
 # ---------------------------------------------------------------------------
 # Variant: text-only timeline (no thumbnails, smaller card)

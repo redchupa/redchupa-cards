@@ -5,8 +5,11 @@ import type {
   HomeAssistant,
   LovelaceCardConfig,
   HassEntity,
+  HistoryResult,
+  HistoryEntry,
 } from '../utils/ha-types';
 import { pickLang, t } from '../utils/i18n';
+import { TTLCache } from '../utils/cache';
 
 interface AiAlertTimelineCardConfig extends LovelaceCardConfig {
   type: 'custom:ai-alert-timeline-card';
@@ -15,6 +18,8 @@ interface AiAlertTimelineCardConfig extends LovelaceCardConfig {
   show_thumbnails?: boolean;
   show_confidence?: boolean;
   max_rows?: number;
+  /** Hours of history to fetch. 0 disables history (current-state only). */
+  history_hours?: number;
 }
 
 interface Row {
@@ -28,19 +33,31 @@ interface Row {
 }
 
 /**
+ * History responses are shared across every instance of this card on the
+ * dashboard — opening the same view a second time reuses the cached result
+ * for 60s, so we don't hammer the WS API.
+ */
+const historyCache = new TTLCache<Row[]>(60_000);
+
+/**
  * Timeline of "latest AI output" entities — typically a small set of
  * `input_text.*` or `sensor.*` that user automations refill each time a
  * baby-cam / front-door / similar AI Task fires.
  *
- * v1 scope: renders only the *current* state of each entity, sorted by
- * `last_changed` descending. Full history (multi-event scrollback) would
- * need a `history/history_during_period` WebSocket call and a small cache —
- * tracked for M2.
+ * Fetches `history/history_during_period` for the watched entities and
+ * renders a true scrollback, merged with the current `hass.states` value
+ * so the latest event is always visible. History fetch is gated on a
+ * "did any watched entity change since last fetch?" check, which avoids
+ * polling but still picks up new events as they arrive.
  */
 @customElement('ai-alert-timeline-card')
 export class AiAlertTimelineCard extends LitElement {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private _config?: AiAlertTimelineCardConfig;
+  @state() private _historyRows: Row[] = [];
+  @state() private _loading = false;
+  private _lastSeenStates = new Map<string, string>();
+  private _historyEverLoaded = false;
 
   public setConfig(config: AiAlertTimelineCardConfig): void {
     if (
@@ -53,10 +70,152 @@ export class AiAlertTimelineCard extends LitElement {
       );
     }
     this._config = config;
+    this._historyEverLoaded = false;
+    this._lastSeenStates.clear();
   }
 
   public getCardSize(): number {
     return Math.max(3, Math.min(this._config?.entities.length ?? 3, 6));
+  }
+
+  protected updated(changed: Map<string, unknown>): void {
+    if (changed.has('hass') || changed.has('_config')) {
+      void this._maybeFetchHistory();
+    }
+  }
+
+  private async _maybeFetchHistory(): Promise<void> {
+    if (!this.hass || !this._config) return;
+    const hours = this._config.history_hours ?? 24;
+    if (hours <= 0) return;
+
+    if (!this._shouldRefetch()) return;
+
+    const ids = this._config.entities;
+    const cacheKey = `${ids.slice().sort().join(',')}|${hours}`;
+    const cached = historyCache.get(cacheKey);
+    if (cached) {
+      this._historyRows = cached;
+      this._historyEverLoaded = true;
+      return;
+    }
+
+    this._loading = true;
+    try {
+      const start = new Date(Date.now() - hours * 3600 * 1000).toISOString();
+      const result = await this.hass.callWS<HistoryResult>({
+        type: 'history/history_during_period',
+        start_time: start,
+        entity_ids: ids,
+        minimal_response: false,
+        significant_changes_only: false,
+        no_attributes: false,
+      });
+      const rows = this._historyToRows(result);
+      historyCache.set(cacheKey, rows);
+      this._historyRows = rows;
+      this._historyEverLoaded = true;
+    } catch (err) {
+      // History API isn't fatal — we still render current state below.
+      // eslint-disable-next-line no-console
+      console.warn('[ai-alert-timeline-card] history fetch failed:', err);
+      this._historyRows = [];
+    } finally {
+      this._loading = false;
+    }
+  }
+
+  /**
+   * True when (a) we never loaded history yet, or (b) at least one watched
+   * entity has a different last_changed than when we last fetched. This lets
+   * us pick up fresh AI events without timer-driven polling.
+   */
+  private _shouldRefetch(): boolean {
+    if (!this._historyEverLoaded) return true;
+    let changed = false;
+    for (const id of this._config!.entities) {
+      const cur = this.hass!.states[id]?.last_changed;
+      if (!cur) continue;
+      const prev = this._lastSeenStates.get(id);
+      if (cur !== prev) {
+        this._lastSeenStates.set(id, cur);
+        changed = true;
+      }
+    }
+    return changed;
+  }
+
+  private _historyToRows(result: HistoryResult): Row[] {
+    const out: Row[] = [];
+    for (const [entityId, entries] of Object.entries(result)) {
+      if (!Array.isArray(entries)) continue;
+      let lastAttrs: Record<string, unknown> = {};
+      for (const e of entries) {
+        const row = this._historyEntryToRow(entityId, e, lastAttrs);
+        if (row) {
+          out.push(row.row);
+          lastAttrs = row.attrs;
+        }
+      }
+    }
+    return out;
+  }
+
+  private _historyEntryToRow(
+    entityId: string,
+    e: HistoryEntry,
+    forwardAttrs: Record<string, unknown>,
+  ): { row: Row; attrs: Record<string, unknown> } | null {
+    const stateVal = e.s ?? e.state;
+    if (
+      typeof stateVal !== 'string' ||
+      stateVal === '' ||
+      stateVal === 'unavailable' ||
+      stateVal === 'unknown'
+    ) {
+      return null;
+    }
+    const attrs: Record<string, unknown> =
+      e.a ?? e.attributes ?? forwardAttrs;
+    const tsSource =
+      typeof e.lu === 'number'
+        ? new Date(e.lu * 1000)
+        : typeof e.lc === 'number'
+          ? new Date(e.lc * 1000)
+          : e.last_updated
+            ? new Date(e.last_updated)
+            : e.last_changed
+              ? new Date(e.last_changed)
+              : null;
+    if (!tsSource || Number.isNaN(tsSource.getTime())) return null;
+
+    const confRaw = this._pickAttr(attrs, ['confidence', 'score', 'prob']);
+    const conf =
+      typeof confRaw === 'number'
+        ? confRaw
+        : typeof confRaw === 'string' && !isNaN(Number(confRaw))
+          ? Number(confRaw)
+          : undefined;
+
+    return {
+      row: {
+        entity_id: entityId,
+        label:
+          (attrs.friendly_name as string | undefined) ??
+          entityId.split('.').pop() ??
+          entityId,
+        text: stateVal,
+        timestamp: tsSource,
+        snapshotUrl: this._asString(
+          this._pickAttr(attrs, ['snapshot_url', 'image_url', 'thumbnail']),
+        ),
+        eventType: this._asString(
+          this._pickAttr(attrs, ['event_type', 'category', 'kind']),
+        ),
+        confidence: conf,
+      },
+      attrs,
+    };
   }
 
   public static async getConfigElement(): Promise<HTMLElement> {
@@ -154,6 +313,12 @@ export class AiAlertTimelineCard extends LitElement {
       color: var(--secondary-text-color);
       text-align: center;
     }
+    .loading {
+      padding: 12px;
+      text-align: center;
+      font-size: 0.85rem;
+      opacity: 0.7;
+    }
   `;
 
   protected render(): TemplateResult | typeof nothing {
@@ -164,21 +329,33 @@ export class AiAlertTimelineCard extends LitElement {
     const showConf = cfg.show_confidence !== false;
 
     const rows = this._buildRows().slice(0, cfg.max_rows ?? 10);
+    const firstFetchPending =
+      this._loading && !this._historyEverLoaded && rows.length === 0;
 
     return html`
       <ha-card>
         <div class="title">${cfg.title ?? t('timeline.title', lang)}</div>
-        ${rows.length === 0
-          ? html`<div class="empty">${t('timeline.empty', lang)}</div>`
-          : html`<div class="timeline">
-              ${this._renderGrouped(rows, lang, showThumbs, showConf)}
-            </div>`}
+        ${firstFetchPending
+          ? html`<div class="loading">…</div>`
+          : rows.length === 0
+            ? html`<div class="empty">${t('timeline.empty', lang)}</div>`
+            : html`<div class="timeline">
+                ${this._renderGrouped(rows, lang, showThumbs, showConf)}
+              </div>`}
       </ha-card>
     `;
   }
 
   private _buildRows(): Row[] {
-    const rows: Row[] = [];
+    const merged: Row[] = [...this._historyRows];
+
+    // Append current state for each entity. If history is in use, dedupe by
+    // (entity_id + timestamp ms) so we don't double-count the latest event
+    // that already appeared in the history response.
+    const seen = new Set(
+      merged.map((r) => `${r.entity_id}|${r.timestamp.getTime()}`),
+    );
+
     for (const id of this._config!.entities) {
       const stateObj: HassEntity | undefined = this.hass!.states[id];
       if (!stateObj) continue;
@@ -189,6 +366,10 @@ export class AiAlertTimelineCard extends LitElement {
       const ts = new Date(stateObj.last_changed);
       if (Number.isNaN(ts.getTime())) continue;
 
+      const key = `${id}|${ts.getTime()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+
       const confRaw = this._pickAttr(attrs, ['confidence', 'score', 'prob']);
       const conf =
         typeof confRaw === 'number'
@@ -197,7 +378,7 @@ export class AiAlertTimelineCard extends LitElement {
             ? Number(confRaw)
             : undefined;
 
-      rows.push({
+      merged.push({
         entity_id: id,
         label:
           (attrs.friendly_name as string | undefined) ??
@@ -214,8 +395,8 @@ export class AiAlertTimelineCard extends LitElement {
         confidence: conf,
       });
     }
-    rows.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
-    return rows;
+    merged.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+    return merged;
   }
 
   private _renderGrouped(
