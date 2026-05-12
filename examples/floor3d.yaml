@@ -1,0 +1,34 @@
+# floor3d-wrapper-card example
+#
+# Renders a .glb floorplan (typically produced by floor3d-toolkit) inline
+# using Google's <model-viewer> web component. The heavy viewer library is
+# only fetched the first time this card is rendered on a dashboard — other
+# users of redchupa-cards never pay that cost.
+#
+# The `url` must be reachable by the browser; the easiest hosting choice
+# is to drop the glb into Home Assistant's `/config/www/` directory, where
+# it shows up as `/local/<filename>.glb`.
+#
+# camera_orbit follows model-viewer's syntax:
+#   "<azimuth> <polar> <radius>"  — e.g. "45deg 60deg 5m"
+# See https://modelviewer.dev/docs/index.html#entrydocs-stagingandcameras-attributes-cameraOrbit
+#
+# height: vertical pixel size of the viewer area (default 320).
+
+type: custom:floor3d-wrapper-card
+title: 우리집 평면도
+url: /local/floor3d/your_home.glb
+alt: Floor plan of the apartment
+auto_rotate: false
+camera_orbit: 0deg 75deg 5m
+height: 400
+
+# ---------------------------------------------------------------------------
+# Variant: presentation mode — autoplays a slow rotation
+# ---------------------------------------------------------------------------
+#
+# type: custom:floor3d-wrapper-card
+# url: /local/floor3d/your_home.glb
+# auto_rotate: true
+# camera_orbit: 0deg 65deg 6m
+# height: 500

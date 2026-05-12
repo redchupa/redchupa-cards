@@ -6,6 +6,7 @@ import './cards/transit-card';
 import './cards/pharmacy-emergency-card';
 import './cards/ai-alert-timeline-card';
 import './cards/family-location-card';
+import './cards/floor3d-wrapper-card';
 
 const VERSION = '0.1.0';
 
@@ -46,6 +47,14 @@ registerCard({
   name: 'Family Location Card',
   description:
     'person · device_tracker · 차량 GPS 통합 위치 카드 (GPS 좌표 비표시)',
+  preview: true,
+});
+
+registerCard({
+  type: 'floor3d-wrapper-card',
+  name: 'Floor3D Wrapper Card',
+  description:
+    'floor3d-toolkit이 생성한 .glb 평면도를 <model-viewer>로 렌더 (lazy chunk)',
   preview: true,
 });
 

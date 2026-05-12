@@ -71,6 +71,21 @@ const STRINGS: Dict = {
     ko: '히스토리 조회 시간 (시간, 0=비활성)',
     en: 'History window (hours, 0=disable)',
   },
+  'editor.url': { ko: 'GLB URL', en: 'GLB URL' },
+  'editor.alt': { ko: '대체 텍스트', en: 'Alt text' },
+  'editor.auto_rotate': { ko: '자동 회전', en: 'Auto rotate' },
+  'editor.camera_orbit': {
+    ko: '카메라 시점 (예: 0deg 75deg 4m)',
+    en: 'Camera orbit (e.g. 0deg 75deg 4m)',
+  },
+  'editor.height': { ko: '카드 높이 (px)', en: 'Card height (px)' },
+  'floor3d.title': { ko: '3D 평면도', en: '3D Floor Plan' },
+  'floor3d.loading': { ko: '3D 뷰어 로드 중…', en: 'Loading 3D viewer…' },
+  'floor3d.error': {
+    ko: '3D 뷰어를 불러올 수 없습니다',
+    en: 'Failed to load 3D viewer',
+  },
+  'floor3d.no_url': { ko: 'GLB URL이 설정되지 않았습니다', en: 'No GLB URL configured' },
 };
 
 export function pickLang(hassLang: string | undefined): Lang {

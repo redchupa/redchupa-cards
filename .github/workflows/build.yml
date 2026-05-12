@@ -30,18 +30,28 @@ jobs:
       - name: Build bundle
         run: npm run build
 
-      - name: Verify bundle size (< 300KB gzip)
+      - name: Verify bundle size (main entry < 300KB gzip)
         run: |
           set -e
           BUNDLE=dist/redchupa-cards.js
           test -f "$BUNDLE" || { echo "::error::Bundle not produced at $BUNDLE"; exit 1; }
           GZIP_SIZE=$(gzip -c "$BUNDLE" | wc -c)
           LIMIT=$((300 * 1024))
-          echo "Bundle gzip size: $GZIP_SIZE bytes (limit: $LIMIT)"
+          echo "Main entry gzip size: $GZIP_SIZE bytes (limit: $LIMIT)"
           if [ "$GZIP_SIZE" -gt "$LIMIT" ]; then
-            echo "::error::Bundle exceeds 300KB gzip limit ($GZIP_SIZE > $LIMIT)"
+            echo "::error::Main bundle exceeds 300KB gzip limit ($GZIP_SIZE > $LIMIT)"
             exit 1
           fi
+          # Report lazy chunks for visibility — not gated by the same limit,
+          # since model-viewer / future heavy deps are only paid by users
+          # who actually instantiate the cards that need them.
+          echo ""
+          echo "Lazy chunks (informational):"
+          for f in dist/redchupa-cards-*.js; do
+            [ -e "$f" ] || continue
+            SZ=$(gzip -c "$f" | wc -c)
+            echo "  $(basename "$f"): $SZ bytes gzip"
+          done
 
       - name: Secret leak scan
         run: |
